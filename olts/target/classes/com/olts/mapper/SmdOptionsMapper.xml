@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.olts.mapper.SmdOptionsMapper">
+
+    <resultMap id="baseResultMap" type="SmdOptions">
+        <id property="id" column="ID"/>
+        <result property="optionA" column="OPTION_A"/>
+        <result property="optionB" column="OPTION_B"/>
+        <result property="optionC" column="OPTION_C"/>
+        <result property="optionD" column="OPTION_D"/>
+        <result property="optionE" column="OPTION_E"/>
+        <result property="questionId" column="QUESTION_ID"/>
+    </resultMap>
+
+    <select id="selSmdOptByQid" parameterType="SmdOptions" resultMap="baseResultMap">
+        SELECT * FROM SMD_OPTIONS WHERE QUESTION_ID = #{qid}
+    </select>
+
+
+
+    <insert id="insertSmdOptions" parameterType="SmdOptions">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(sys_guid(), '-', '') as id from dual
+        </selectKey>
+
+        INSERT INTO SMD_OPTIONS(ID,OPTION_A,OPTION_B,OPTION_C,OPTION_D,OPTION_E,QUESTION_ID)
+        VALUES (#{id},#{optionA},#{optionB},#{optionC},#{optionD},#{optionE,jdbcType=VARCHAR},#{questionId})
+    </insert>
+
+</mapper>

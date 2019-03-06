@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.olts.mapper.OltsUserMapper">
+
+
+    <resultMap id="baseResultMap" type="OltsUser">
+        <id property="id" column="ID"/>
+        <result property="stu_no" column="STU_NO"/>
+        <result property="id_card_no" column="ID_CARD_NO"/>
+        <result property="user_name" column="USER_NAME"/>
+        <result property="pass_word" column="PASS_WORD"/>
+        <result property="mobile" column="MOBILE"/>
+        <result property="home_tel" column="HOME_TEL"/>
+        <result property="home_addr" column="HOME_ADDR"/>
+        <result property="qq" column="QQ"/>
+        <result property="email" column="EMAIL"/>
+        <result property="user_type" column="USER_TYPE"/>
+        <result property="gender" column="GENDER"/>
+        <result property="birthday" column="BIRTHDAY"/>
+        <result property="nation_place" column="NATION_PLACE"/>
+        <result property="marjor" column="MARJOR"/>
+        <result property="edu_Background" column="EDU_BACKGROUND"/>
+        <result property="graduate_School" column="GRADUATE_SCHOOL"/>
+    </resultMap>
+
+    <select id="selectByLogin" parameterType="OltsUser" resultMap="baseResultMap">
+        SELECT * FROM OLTS_USERS WHERE USER_NAME=#{user_name} AND PASS_WORD=#{pass_word}
+    </select>
+
+
+
+</mapper>

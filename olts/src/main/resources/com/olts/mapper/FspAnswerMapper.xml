@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.olts.mapper.FspAnswerMapper">
+
+	<!--
+		private Integer Id;
+		private String answer;// 答案
+		private Integer fspId;// 填空题，简答题，编程题的题号
+		private String exam_no;// 考试编号
+		Integer userId;// 用户编号
+	 -->
+	<resultMap type="FspAnswer" id="fspAnswerMap">
+		<id property="id" column="ID"/>
+		<result property="answer" column="ANSWER"/>
+		<result property="fspId" column="FSP_ID"/>
+		<result property="exam_no" column="EXAM_NO"/>
+		<result property="userId" column="USER_ID"/>	
+	</resultMap>
+
+	<!--增加学生主观题答案 
+		注：学生主观题答案表（fsp_answer）的试题编号(fsp_id)与学生主观题问题表(fsp_question)
+		的id（序列号）形成依赖
+	 -->
+	<insert id="insertFspAnswer" parameterType="fspAnswer">
+		<selectKey keyProperty="id" resultType="int" order="BEFORE">
+			select fsp_answer_seq.nextval from dual
+		</selectKey>
+		insert into fsp_answer 
+		values(#{id},#{answer},#{fspId},#{exam_no},#{userId})
+	</insert>
+	
+	<!-- 根据学生编号，试卷编号，试题编号查找学生主观题答案 -->
+	<select id="select" parameterType="fspAnswer" resultMap="fspAnswerMap">
+		select * from fsp_answer
+		where fsp_id=#{fspId} and exam_no=#{exam_no} and user_id=#{userId}
+	</select>
+	
+	<!-- 根据学生编号，试卷编号查找学生主观题答案 -->
+	<select id="selectAll" parameterType="fspAnswer" resultMap="fspAnswerMap">
+		select * from fsp_answer
+		where exam_no=#{exam_no} and user_id=#{userId}
+		order by fsp_id
+	</select>
+
+	<insert id="insertiveFspAnswer" parameterType="FspAnswer">
+		INSERT INTO FSP_ANSWER
+		VALUES (fsp_answer_seq.nextval,#{answer},#{fspId},#{exam_no},#{userId})
+
+	</insert>
+
+</mapper>

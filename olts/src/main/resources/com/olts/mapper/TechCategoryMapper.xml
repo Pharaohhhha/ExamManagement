@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.olts.mapper.TechCategoryMapper">
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseResultMap" type="TechCategory">
+        <id property="id" column="ID"/>
+        <result property="techCtgr" column="TECH_CTGR"/>
+       <result property="courseId" column="COURSE_ID"/>
+    </resultMap>
+
+    <resultMap type="techCategory" id="techCategoryMap">
+        <id property="id" column="id"/>
+        <result property="techCtgr" column="TECH_CTGR"/>
+        <result property="courseId" column="COURSE_ID"/>
+    </resultMap>
+
+    <select id="selectByCourseId" resultMap="baseResultMap" parameterType="int">
+        SELECT * 
+        FROM TECH_CATEGORY 
+        WHERE COURSE_ID=#{id}
+    </select>
+
+    <select id="selectTechCategroy" parameterType="Page" resultMap="techCategoryMap">
+        SELECT * FROM TECH_CATEGORY WHERE COURSE_ID=#{courseId} order by id asc
+    </select>
+
+
+    <!--删除课程下所有知识点-->
+    <delete id="delete" parameterType="int">
+        delete tech_category where course_id=#{courseId}
+    </delete>
+    <!--增加知识点-->
+    <insert id="insertTechCategroy" parameterType="techCategory">
+        insert into tech_category values(tech_category_seq.nextval,#{techCtgr},#{courseId})
+    </insert>
+    <!--更改知识点-->
+    <update id="updateTechCategroy" parameterType="techCategory">
+        update tech_category set TECH_CTGR=#{techCtgr} where id=#{id}
+    </update>
+    <!--删除单个知识点-->
+    <delete id="deleteTechCategroy" parameterType="int">
+        delete tech_category where id=#{id}
+    </delete>
+
+    <select id="selectBySelective" parameterType="TechCategory" resultMap="techCategoryMap"
+            flushCache="false" useCache="false">
+        select * from TECH_CATEGORY
+        <where>
+            <if test="courseId != null"> AND course_id=#{courseId}
+                <if test="techCtgr != null and techCtgr.trim().length()>0">
+                    <bind name="techleLike" value="'%' + techCtgr + '%'"/>
+                    AND TECH_CTGR LIKE #{techleLike}
+                </if>
+
+            </if>
+        </where>
+        order by id asc
+
+    </select>
+
+    <select id="countForSelective" parameterType="Page" resultType="int">
+        SELECT count(id) FROM TECH_CATEGORY
+    </select>
+</mapper>

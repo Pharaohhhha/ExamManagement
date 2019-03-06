@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.olts.mapper.SmdQuestionsMapper">
+
+    <resultMap type="smdQuestions" id="smdQuestionsMap">
+        <id property="id" column="ID" />
+        <result property="question" column="QUESTION" />
+        <result property="correct" column="CORRECT" />
+        <result property="questionType" column="QUESTION_TYPE" />
+        <result property="techCateId" column="TECH_CATE_ID" />
+        <result property="descrpt" column="DESCRPT" />
+        <result property="pubdate" column="PUBDATE" />
+        <association property="options" javaType="smdOptions"
+                     column="question_id" columnPrefix="so_">
+            <id property="id" column="id" />
+            <result property="optionA" column="OPTION_A" />
+            <result property="optionB" column="OPTION_B" />
+            <result property="optionC" column="OPTION_C" />
+            <result property="optionD" column="OPTION_D" />
+            <result property="optionE" column="OPTION_E" />
+            <result property="questionId" column="QUESTION_ID" />
+        </association>
+    </resultMap>
+
+    <resultMap id="baseResultMap" type="SmdQuestions">
+        <id property="id" column="ID"/>
+        <result property="question" column="QUESTION"/>
+        <result property="correct" column="correct"/>
+        <result property="questionType" column="QUESTION_TYPE"/>
+        <result property="techCateId" column="TECH_CATE_ID"/>
+        <result property="pubdate" column="PUB_DATE"/>
+        <result property="descrpt" column="DESCRPT"/>
+        <association property="options"  javaType="SmdOptions" columnPrefix="SO_">
+            <id property="id" column="Id"/>
+            <result property="questionId" column="question_id"/>
+            <result property="optionA" column="option_a"/>
+            <result property="optionB" column="option_b"/>
+            <result property="optionC" column="option_c"/>
+            <result property="optionD" column="option_d"/>
+            <result property="optionE" column="option_e"/>
+        </association>
+    </resultMap>
+
+    <update id="updateSmdQuestion" parameterType="SmdQuestions">
+        UPDATE SMD_QUESTIONS
+        <set>
+            <if test="question != null">QUESTION =#{question},</if>
+            <if test="correct != null">correct=#{correct},</if>
+            <if test="techCateId !=null">tech_cate_id=#{techcateid}</if>
+            <if test="descrpt !=null">descrpt=#{descrpt}</if>
+        </set>
+        WHERE ID=#{id}
+
+    </update>
+    <delete id="delete" parameterType="SmdQuestions">
+        DELETE  FROM SMD_QUESTIONS
+        WHERE SMD_QUESTIONS.ID=#{id}
+    </delete>
+
+    <select id="selectBySelective" resultMap="baseResultMap" parameterType="SmdQuestions">
+        SELECT  sq.*,
+        so.ID so_id,
+        so.QUESTION_ID SO_QUESTION_ID,
+        SO.OPTION_A  so_OPTION_A,
+        SO.OPTION_B so_OPTION_B,
+        SO.OPTION_C so_OPTION_C,
+        SO.OPTION_D so_OPTION_D,
+        so.OPTION_E so_OPTION_E
+        FROM SMD_QUESTIONS sq INNER  JOIN SMD_OPTIONS SO
+        ON sq.ID = so.QUESTION_ID
+        <where>
+            <if test="sq != null">
+                <if test="sq.question != null and sq.question.trim().length()>0">
+                    <bind name="questionLike" value="'%' + sq.question + '%'"/>
+                    AND question LIKE #{questionLike}
+                </if>
+                <if test="sq.techCateId !=null">and tech_cate_id =#{sq.techCateId}</if>
+            </if>
+            AND  question_type=#{sq.questionType}
+        </where>
+    </select>
+
+
+    <insert id="insertSmdQuestion" parameterType="SmdQuestions">
+        <selectKey keyProperty="id" order="BEFORE" resultType="int">
+            SELECT SMD_QUESTIONS_SEQ.nextval FROM DUAL
+        </selectKey>
+        
+        INSERT INTO SMD_QUESTIONS(ID,QUESTION,CORRECT,QUESTION_TYPE,TECH_CATE_ID,DESCRPT)
+        VALUES (#{id},#{question},#{correct},#{questionType},#{techCateId},#{descrpt,jdbcType=VARCHAR})
+    </insert>
+    <insert id="insertSmdOptions" parameterType="SmdOptions">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(sys_guid(), '-', '') as id from dual
+        </selectKey>
+        INSERT INTO SMD_OPTIONS(ID,OPTION_A,OPTION_B,OPTION_C,OPTION_D,OPTION_E,QUESTION_ID)
+        VALUES (#{id},#{optionA,jdbcType=VARCHAR},#{optionB,jdbcType=VARCHAR},#{optionC,jdbcType=VARCHAR},#{optionD,jdbcType=VARCHAR},#{optionE,jdbcType=VARCHAR},#{questionId})
+    </insert>
+
+    <insert id="insertJudgeQuestion" parameterType="SmdQuestions">
+        <selectKey keyProperty="id" order="BEFORE" resultType="int">
+            SELECT SMD_QUESTIONS_SEQ.nextval FROM DUAL
+        </selectKey>
+
+        INSERT INTO SMD_QUESTIONS(ID,QUESTION,CORRECT,QUESTION_TYPE,TECH_CATE_ID,DESCRPT)
+        VALUES (#{id},#{question},#{correct},#{questionType},#{techCateId},#{descrpt,jdbcType=VARCHAR})
+    </insert>
+
+    <!--根据客观题id查询客观题 -->
+    <select id="selectById" parameterType="int" resultMap="smdQuestionsMap">
+        select q.*,
+        o.id so_id,
+        o.option_A so_option_A,
+        o.option_B so_option_B,
+        o.option_C so_option_C,
+        o.option_D so_option_D,
+        o.option_E so_option_E,
+        o.question_id so_question_id
+        from smd_questions q,smd_options o
+        where q.id=o.question_id and q.id=#{id}
+    </select>
+
+    <!-- 根据id得到客观题的答案 -->
+    <select id="selectAnswerById" parameterType="int" resultType="String">
+        select correct from smd_questions where id = #{id}
+    </select>
+
+
+    <select id="selectSMDquestionById" resultMap="smdQuestionsMap" parameterType="SmdQuestions">
+        SELECT  * FROM SMD_QUESTIONS WHERE ID = #{id}
+    </select>
+
+
+</mapper>

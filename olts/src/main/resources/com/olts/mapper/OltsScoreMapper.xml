@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.olts.mapper.OltsScoreMapper">
+
+    <!-- 名字空间,mybatis高版本后namespace属性是必须的，其作用用来区分每个SQL映射文件中的语句, 也就说在一个项目里可能会在不同的SQL
+	映射文件中存在相同的语句ID -->
+        <resultMap type="oltsScore" id="oltsScoreMap" >
+            <id property="id" column="ID"/>
+            <result property="score" column="SCORE"/>
+            <result property="testDate" column="TEST_DATE"/>
+            <result property="descrpt" column="DESCRPT"/>
+            <result property="userId" column="USER_ID"/>
+            <result property="examNo" column="EXAM_NO"/>
+            <result property="fspScore" column="FSP_SCORE"/>
+
+            <association property="oltsUser" javaType="oltsUser" column="ID" columnPrefix="U_"
+                         resultMap="com.olts.mapper.UserMapper.baseResultMap">
+
+            </association>
+
+        </resultMap>
+
+        <!-- 根据考卷id查成绩 -->
+        <select id="selectByExamId" parameterType="page" resultMap="oltsScoreMap">
+            select * from (
+            select a.*,rownum rn from(
+            select 	u.USER_NAME 		U_USER_NAME,
+            u.GENDER 			U_GENDER,
+            u.GRADUATE_SCHOOL	U_GRADUATE_SCHOOL,
+            u.MARJOR			U_MARJOR,
+            u.EDU_BACKGROUND	U_EDU_BACKGROUND,
+            s.SCORE,
+            s.FSP_SCORE,
+            s.SCORE+s.FSP_SCORE,
+            s.EXAM_NO,
+            s.USER_ID
+            from 	OLTS_USERS u,
+            OLTS_SCORE s
+            where 	s.EXAM_NO=#{queryObject.examNo}
+            AND u.ID=s.USER_ID
+            ) a where <![CDATA[rownum<=#{lastIndex}]]>
+            ) where rn>=#{firstIndex}
+        </select>
+        <select id="countForSelective" parameterType="page" resultType="int">
+            select count(s.id) from OLTS_SCORE s
+        </select>
+
+        <insert id="insertStuScore" parameterType="oltsScore">
+            <selectKey keyProperty="id" resultType="int" order="BEFORE">
+                select olts_score_seq.nextval from dual
+            </selectKey>
+            insert into olts_score (id,score,user_id,exam_no)  values(#{id},#{score},#{userId},#{examNo})
+        </insert>
+        <!-- 根据学生id和试卷编号来查询主观分数 -->
+        <select id="selectByIdAndNo" parameterType="oltsScore" resultMap="oltsScoreMap">
+            select *
+            from olts_score
+            where USER_ID=#{userId} and EXAM_NO=#{examNo}
+        </select>
+
+        <!-- 根据试卷编号来查询主观分数 -->
+        <select id="selectByNo" parameterType="oltsScore" resultMap="oltsScoreMap">
+            select *
+            from olts_score
+            where EXAM_NO=#{examNo}
+        </select>
+
+
+        <!-- 根据学生id来查询成绩的分页查询 -->
+        <select id="selectByStuId" parameterType="page" resultMap="oltsScoreMap">
+            select * from (
+            select a.*,rownum rn from(
+            select 	*
+            from 	OLTS_SCORE
+            where 	USER_ID=#{queryObject.userId}
+            ORDER BY TEST_DATE DESC
+            ) a where <![CDATA[rownum<=#{lastIndex}]]>
+            ) where rn>=#{firstIndex}
+        </select>
+
+        <!--获取个人所有分数-->
+        <select id="selectAllScore" resultMap="oltsScoreMap" parameterType="oltsScore">
+            select *
+            from OLTS_SCORE
+            where USER_ID=#{userId}
+            ORDER BY TEST_DATE DESC
+        </select>
+
+    <insert id="insertScore" parameterType="OltsScore">
+        INSERT INTO OLTS_SCORE(ID, SCORE,TEST_DATE,DESCRPT, USER_ID, EXAM_NO)
+        VALUES (OLTS_SCORE_SEQ.nextval,#{score},sysdate,#{descrpt},#{userId},#{examNo})
+    </insert>
+
+        <!-- 获取个人所有分数记录-->
+        <select id="countForStuScore" parameterType="page" resultType="int">
+            select count(s.id) from OLTS_SCORE s where s.USER_ID=#{userId}
+        </select>
+
+        <!-- 根据学生id和试卷编号来更新学生主观分数 -->
+        <update id="updateStuFspscore" parameterType="oltsScore">
+            update olts_score
+            <set>
+                <if test="fspScore != null">
+                    FSP_SCORE=#{fspScore},
+                </if>
+            </set>
+            where USER_ID=#{userId} and EXAM_NO=#{examNo}
+        </update>
+
+</mapper>

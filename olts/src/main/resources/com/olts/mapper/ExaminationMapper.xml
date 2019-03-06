@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.olts.mapper.ExaminationMapper">
+	<resultMap type="examination" id="examResultMap">
+		<id property="examNo" column="EXAM_NO"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="examDate" column="EXAM_DATE"/>
+		<result property="singleId" column="SINGLE_ID"/>
+		<result property="multipleId" column="MULTIPLE_ID"/>
+		<result property="trueFalseId" column="TRUE_FALSE_ID"/>
+		
+		<result property="fillInGapsId" column="FILL_IN_GAPS_ID"/>
+		<result property="simpleAnwserId" column="SIMPLE_ANWSER_ID"/>
+		<result property="programId" column="PROGRAM_ID"/>
+		<result property="descrpt" column="DESCRPT"/>
+		<result property="validFlag" column="VALID_FLAG"/>
+			
+	</resultMap>
+	<!-- 查询所有试卷的编号 -->
+	<select id="selectAllNo" resultMap="examResultMap" >
+		select * from examination
+	</select>
+	<!-- 根据试卷编号查看试卷 -->
+	<select id="selectByNo" resultMap="examResultMap" parameterType="examination">
+		select * from examination where EXAM_NO=#{examNo}
+	</select>
+	
+	<!-- 动态插入column -->
+	<sql id="insert_column">
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="examNo != null">EXAM_NO,</if>
+			<if test="userId != null">USER_ID,</if>
+			<if test="examDate != null">EXAM_DATE,</if>
+			<if test="singleId != null">SINGLE_ID,</if>
+			<if test="multipleId != null">MULTIPLE_ID,</if>
+			<if test="trueFalseId != null">TRUE_FALSE_ID,</if>
+			
+			<if test="fillInGapsId != null">FILL_IN_GAPS_ID,</if>
+			<if test="simpleAnwserId != null">SIMPLE_ANWSER_ID,</if>
+			<if test="programId != null">PROGRAM_ID,</if>
+			<if test="descrpt != null">DESCRPT,</if>
+			<if test="validFlag != null">VALID_FLAG,</if>
+		</trim>
+	</sql>
+	
+	<!-- 动态插入values -->
+	<sql id="insert_values">
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+			<if test="examNo != null">#{examNo},</if>
+			<if test="userId != null">#{userId},</if>
+			<if test="examDate != null">#{examDate},</if>
+			<if test="singleId != null">#{singleId},</if>
+			<if test="multipleId != null">#{multipleId},</if>
+			<if test="trueFalseId != null">#{trueFalseId},</if>
+			
+			<if test="fillInGapsId != null">#{fillInGapsId},</if>
+			<if test="simpleAnwserId != null">#{simpleAnwserId},</if>
+			<if test="programId != null">#{programId},</if>
+			<if test="descrpt != null">#{descrpt},</if>
+			<if test="validFlag != null">#{validFlag},</if>
+		</trim>
+	</sql>
+	<!-- 加入新的试卷-->
+	<insert id="insertiveExamation" parameterType="examination" >
+		insert into examination <include refid="insert_column"></include> <include refid="insert_values"></include>
+	</insert>
+	
+	<sql id="update">
+		<set>
+			<if test="singleId != null">
+				 SINGLE_ID=#{singleId},
+			</if>
+			<if test="multipleId != null">
+				 MULTIPLE_ID=#{multipleId},
+			</if>
+			<if test="trueFalseId != null">
+				 TRUE_FALSE_ID=#{trueFalseId},
+			</if>
+			<if test="fillInGapsId != null">
+				 FILL_IN_GAPS_ID=#{fillInGapsId},
+			</if>
+			<if test="simpleAnwserId != null">
+				 SIMPLE_ANWSER_ID=#{simpleAnwserId},
+			</if>              
+			<if test="programId != null">
+				 PROGRAM_ID=#{programId},
+			</if>
+		
+		</set>
+	</sql>
+	<update id="update" parameterType="examination">
+		update examination  <include refid="update"></include>
+		where EXAM_NO=#{examNo}
+	</update>
+	
+	<update id="updateExamValid" parameterType="examination">
+		update examination set valid_flag = #{validFlag} where EXAM_NO=#{examNo}
+	</update>
+	
+	<update id="updateEndExam">
+		update examination set valid_flag = 0 
+	</update>
+	
+	<delete id="delExamByNO">
+		delete from examination where EXAM_NO=#(examNo);
+	</delete>
+
+	<select id="selectExamination" parameterType="Examination" resultMap="examResultMap">
+		SELECT * FROM EXAMINATION
+	</select>
+
+	<select id="selectExaminationById"  resultMap="examResultMap">
+		SELECT * FROM EXAMINATION WHERE EXAM_NO= #{examNo}
+	</select>
+</mapper>

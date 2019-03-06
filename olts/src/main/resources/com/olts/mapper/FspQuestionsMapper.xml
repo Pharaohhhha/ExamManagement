@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.olts.mapper.FspQuestionsMapper">
+
+    <resultMap type="FspQuestions" id="fspresultMap">
+        <id property="id" column="ID"/>
+        <result property="question" column="QUESTION"/>
+        <result property="stdAnswer" column="STD_ANSWER"/>
+        <result property="questionType" column="QUESTION_TYPE"/>
+        <result property="techCateId" column="TECH_CATE_ID"/>
+        <result property="pubdate" column="PUBDATE"/>
+        <result property="descrpt" column="DESCRPT"/>
+    </resultMap>
+    
+    <resultMap id="baseFspQuestions" type="FspQuestions">
+        <id  property="id" column="ID" />
+        <result property="question" column="QUESTION"/>
+        <result property="stdAnswer" column="STD_ANSWER" javaType="String" jdbcType="CLOB" />
+        <result property="questionType" column="QUESTION_TYPE"/>
+        <result property="techCateId" column="TECH_CATE_ID"/>
+        <result property="pubdate" column="PUBDATE"/>
+        <result property="descrpt" column="DESCRPT"/>
+    </resultMap>
+
+    <resultMap id="baseCourses" type="Courses">
+        <id  property="id" column="ID" />
+        <result property="courseName" column="COURSE_NAME"/>
+    </resultMap>
+
+    <resultMap id="baseTechCategory" type="TechCategory" >
+        <id  property="id" column="ID" />
+        <result property="techCtgr" column="TECH_CTGR"/>
+        <result property="courseId" column="COURSE_ID"/>
+    </resultMap>
+
+    <insert id="insertFspQuestion" parameterType="FspQuestions">
+        <selectKey keyProperty="id" order="BEFORE" resultType="int">
+            SELECT FSP_QUESTIONS_SEQ.nextval FROM DUAL
+        </selectKey>
+        INSERT INTO FSP_QUESTIONS(ID,QUESTION,STD_ANSWER,QUESTION_TYPE,TECH_CATE_ID,DESCRPT)
+        VALUES (#{id},#{question},#{stdAnswer},#{questionType},#{techCateId},#{descrpt,jdbcType=VARCHAR})
+    </insert>
+
+    <select id="selectBySelective" parameterType="FspQuestions" resultMap="baseFspQuestions">
+        SELECT * FROM FSP_QUESTIONS
+        <where>
+            <if test="fq != null">
+                <if test="fq.question != null and fq.question.trim().length()>0">
+                    <bind name="questionLike" value="'%' + fq.question + '%'"/>
+                    AND QUESTION LIKE #{questionLike}
+                </if>
+                <if test="fq.techCateId != null">AND  TECH_CATE_ID=#{fq.techCateId}</if>
+            </if>
+            AND QUESTION_TYPE=#{fq.questionType}
+        </where>
+
+        ORDER BY PUBDATE DESC
+    </select>
+
+    <update id="updateFspQuestion" parameterType="FspQuestions">
+        UPDATE FSP_QUESTIONS
+        <set>
+            <if test="question != null and question.trim().length()>0">QUESTION=#{question},</if>
+            <if test="stdAnswer != null">STD_ANSWER=#{stdAnswer},</if>
+            <if test="questionType != null">QUESTION_TYPE=#{questionType},</if>
+            <if test="techCateId != null">TECH_CATE_ID=#{techCateId},</if>
+            <if test="descrpt != null">DESCRPT=#{descrpt},</if>
+        </set>
+        WHERE ID=#{id}
+    </update>
+
+    <select id="selectCourses"  resultMap="baseCourses">
+        SELECT * FROM COURSES
+    </select>
+
+    <select id="selectTechCategoryByCourseId" parameterType="int" resultMap="baseTechCategory">
+        SELECT ID,TECH_CTGR,COURSE_ID FROM TECH_CATEGORY WHERE COURSE_ID=#{id}
+    </select>
+
+    <select id="selectTechCategory"  resultMap="baseTechCategory">
+        SELECT * FROM TECH_CATEGORY
+    </select>
+
+    <delete id="deleteFspQuestion" parameterType="int">
+        DELETE FROM FSP_QUESTIONS WHERE id=#{id}
+    </delete>
+
+    <!-- 根据题目ID查找题目 -->
+    <select id="selectFspById" parameterType="int" resultMap="fspresultMap">
+        select * from fsp_questions where id=#{id}
+    </select>
+
+
+    <select id="selectByFsqId" parameterType="FspQuestions" resultMap="baseFspQuestions">
+        SELECT * FROM FSP_QUESTIONS WHERE ID = #{fsqId}
+    </select>
+</mapper>

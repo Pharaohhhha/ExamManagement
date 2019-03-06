@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.olts.mapper.CoursesMapper">
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseResultMap" type="Courses">
+        <id property="id" column="ID"/>
+        <result property="courseName" column="COURSE_NAME"/>
+    </resultMap>
+    <select id="selectAll" resultMap="baseResultMap" flushCache="false" useCache="true">
+        SELECT *
+        FROM COURSES
+    </select>
+
+    <resultMap type="Courses" id="coursesMap">
+        <id property="id" column="id"/>
+        <result property="courseName" column="course_name"/>
+    </resultMap>
+    <!-- 查询所有课程 -->
+    <select id="testSelectAllCourse"  resultMap="coursesMap">
+        SELECT * FROM courses
+    </select>
+
+    <!-- 通过分页查询所有课程 -->
+    <select id="selectAllCourse" parameterType="page" resultMap="coursesMap">
+        select * from (
+        select a.*,rownum rn from(
+        select * from courses order by id asc
+        ) a where <![CDATA[rownum<=#{lastIndex}]]>
+        ) where rn>=#{firstIndex}
+    </select>
+
+    <select id="countForSelective" parameterType="page" resultType="int">
+        SELECT count(id) FROM courses
+    </select>
+
+    <!--增加课程 -->
+    <insert id="insertCourse" parameterType="courses">
+        insert into courses values(course_seq.nextval,#{courseName})
+    </insert>
+
+
+    <select id="selectCoursesById" resultType="courses">
+        select * from courses where id=#{id}
+    </select>
+
+    <!-- 更新课程 -->
+    <update id="update" parameterType="courses">
+        update courses set course_name=#{courseName} where id=#{id}
+    </update>
+
+    <!-- 删除课程 -->
+    <delete id="delete" parameterType="int">
+        delete courses where id=#{id}
+    </delete>
+
+    <!-- -->
+    <select id="selectBySelective" parameterType="Courses" resultMap="coursesMap">
+        SELECT * FROM COURSES
+        <where>
+            <if test="c.courseName != null and c.courseName.trim().length()>0">
+                <bind name="course_name" value="'%'+c.courseName+'%'"/>
+                COURSE_NAME like #{course_name}
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+</mapper>
